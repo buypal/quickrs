@@ -5,7 +5,63 @@ use std::{
     process::{Command, Stdio},
 };
 
-fn build_non_wasi() {
+fn build_non_wasi<'a, X, K, V>(out_dir: &Path, src_dir: &Path, features: Vec<&str>) {
+    let header_files = [
+        "libbf.h",
+        "libregexp-opcode.h",
+        "libregexp.h",
+        "libunicode-table.h",
+        "libunicode.h",
+        "list.h",
+        "quickjs-atom.h",
+        "quickjs-opcode.h",
+        "quickjs.h",
+        "cutils.h",
+    ];
+
+    let source_files = [
+        "libregexp.c",
+        "libunicode.c",
+        "cutils.c",
+        "quickjs.c",
+        "libbf.c",
+    ];
+
+    let mut defines = vec![
+        ("_GNU_SOURCE".into(), None),
+        ("CONFIG_VERSION".into(), Some("\"2020-01-19\"")),
+        ("CONFIG_BIGNUM".into(), None),
+    ];
+    
+    // generating bindings
+    bindgen(out_dir, out_dir.join("quickjs.h"), &defines);
+   
+    for feature in &features {
+        if feature.starts_with("dump-") && env::var(feature_to_cargo(feature)).is_ok() {
+            defines.push((feature_to_define(feature), None));
+        }
+    }
+
+    for file in source_files.iter().chain(header_files.iter()) {
+        fs::copy(src_dir.join(file), out_dir.join(file)).expect("Unable to copy source");
+    }
+
+    let mut builder = cc::Build::new();
+    builder
+        .extra_warnings(false)
+        //.flag("-Wno-array-bounds")
+        //.flag("-Wno-format-truncation")
+        ;
+
+    for (name, value) in &defines {
+        builder.define(name, *value);
+    }
+
+    for src in &source_files {
+        builder.file(out_dir.join(src));
+    }
+
+    builder.compile("libquickjs.a");
 
 }
 
@@ -39,67 +95,10 @@ fn main() {
     }
 
     let src_dir = Path::new("quickjs");
-
     let out_dir = env::var("OUT_DIR").expect("No OUT_DIR env var is set by cargo");
     let out_dir = Path::new(&out_dir);
 
-    let header_files = [
-        "libbf.h",
-        "libregexp-opcode.h",
-        "libregexp.h",
-        "libunicode-table.h",
-        "libunicode.h",
-        "list.h",
-        "quickjs-atom.h",
-        "quickjs-opcode.h",
-        "quickjs.h",
-        "cutils.h",
-    ];
-
-    let source_files = [
-        "libregexp.c",
-        "libunicode.c",
-        "cutils.c",
-        "quickjs.c",
-        "libbf.c",
-    ];
-
-    let mut defines = vec![
-        ("_GNU_SOURCE".into(), None),
-        ("CONFIG_VERSION".into(), Some("\"2020-01-19\"")),
-        ("CONFIG_BIGNUM".into(), None),
-    ];
-
-   
-    for feature in &features {
-        if feature.starts_with("dump-") && env::var(feature_to_cargo(feature)).is_ok() {
-            defines.push((feature_to_define(feature), None));
-        }
-    }
-
-    for file in source_files.iter().chain(header_files.iter()) {
-        fs::copy(src_dir.join(file), out_dir.join(file)).expect("Unable to copy source");
-    }
-
-    // generating bindings
-    bindgen(out_dir, out_dir.join("quickjs.h"), &defines);
-
-    let mut builder = cc::Build::new();
-    builder
-        .extra_warnings(false)
-        //.flag("-Wno-array-bounds")
-        //.flag("-Wno-format-truncation")
-        ;
-
-    for (name, value) in &defines {
-        builder.define(name, *value);
-    }
-
-    for src in &source_files {
-        builder.file(out_dir.join(src));
-    }
-
-    builder.compile("libquickjs.a");
+    
 }
 
 fn feature_to_cargo(name: impl AsRef<str>) -> String {
