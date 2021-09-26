@@ -55,6 +55,10 @@ impl<'js> Ctx<'js> {
         handle_exception(self, val)
     }
 
+    pub fn raw_ctx(&self) -> *mut qjs::JSContext {
+        self.ctx
+    }
+
     /// Evaluate a script in global context
     pub fn eval<V: FromJs<'js>, S: Into<Vec<u8>>>(self, source: S) -> Result<V> {
         let file_name = unsafe { CStr::from_bytes_with_nul_unchecked(b"eval_script\0") };

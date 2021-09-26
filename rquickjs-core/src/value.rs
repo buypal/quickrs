@@ -106,6 +106,11 @@ impl<'js> Value<'js> {
     }
 
     #[inline]
+    pub fn value(&self) -> qjs::JSValue {
+        self.value
+    }
+
+    #[inline]
     pub(crate) unsafe fn from_js_value_const(ctx: Ctx<'js>, value: qjs::JSValueConst) -> Self {
         let value = qjs::JS_DupValue(value);
         Self { ctx, value }
@@ -117,7 +122,7 @@ impl<'js> Value<'js> {
     }
 
     #[inline]
-    pub(crate) fn into_js_value(self) -> qjs::JSValue {
+    pub fn into_js_value(self) -> qjs::JSValue {
         let value = self.value;
         mem::forget(self);
         value
