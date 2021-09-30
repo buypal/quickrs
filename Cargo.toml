@@ -1,6 +1,6 @@
 [package]
 name = "quickrs"
-version = "0.1.1"
+version = "0.1.2"
 authors = []
 edition = "2018"
 license = "MIT"
@@ -10,7 +10,7 @@ keywords = ["quickrs", "ecmascript", "javascript", "es6", "es2020"]
 categories = ["api-bindings"]
 
 [dependencies.rquickjs-core]
-version = "0.1.1"
+version = "0.1.2"
 path = "./rquickjs-core"
 
 [dependencies.rquickjs-macro]
