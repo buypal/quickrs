@@ -44,7 +44,7 @@ optional = true
 
 [dependencies.rquickjs-sys]
 version = "0.1.0"
-path = "../rquickjs-sys"
+path = "../sys"
 
 [dependencies.tokio-rs]
 package = "tokio"
