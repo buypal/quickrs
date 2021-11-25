@@ -169,7 +169,7 @@ impl Embedder {
     #[cfg(feature = "phf")]
     fn build_phf(&self, entries: &[Entry<String, TokenStream>]) -> TokenStream {
         let lib_crate = &self.config.lib_crate;
-        let state = phf_generator::generate_hash(&entries);
+        let state = phf_generator::generate_hash(entries);
         let key = state.key;
         let disps = state.disps.iter().map(|&(d1, d2)| quote!((#d1, #d2)));
         let entries = state.map.iter().map(|&index| {
@@ -198,7 +198,7 @@ mod test {
         #[cfg(feature = "phf")]
         perfect_hash_map { test, perfect, path = "." } { mod my_module {} } {
             static MY_MODULE: rquickjs::Bundle<&'static rquickjs::phf::Map<&'static str, &'static [u8]>> = rquickjs::Bundle(&rquickjs::phf::Map {
-                key: 3213172566270843353u64,
+                key: 12913932095322966823u64,
                 disps: rquickjs::phf::Slice::Static(&[
                     (0u32 , 0u32)
                 ]),
